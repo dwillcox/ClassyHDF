@@ -52,7 +52,7 @@ int main() {
             const bool search_backwards = true;
             int loc = dataset.search1D<int>(search_fun, search_backwards);
 
-            // searchID returns an index, and since in C++ the data is 0-indexed,
+            // search1D returns an index, and since in C++ the data is 0-indexed,
             // we can remove the found element and anything past it by setting extent to loc.
             // (set_extent takes a number of elements, not an index)
             if (loc >= 0) dataset.set_extent({loc});
