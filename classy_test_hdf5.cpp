@@ -58,7 +58,7 @@ int main() {
             if (loc >= 0) dataset.set_extent({loc});
         }
 
-        /* APPEND OUR DATA*/
+        /* APPEND OUR DATA */
         {
             group2.append(data);
         }
