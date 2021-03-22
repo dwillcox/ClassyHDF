@@ -71,6 +71,7 @@ class Dimensions {
         }
     public:
         int rank() const { return m_rank; }
+        int length(int i) const { return m_dimensions[i]; }
         std::vector<int> dimensions() const { return m_dimensions; }
 };
 
@@ -128,12 +129,23 @@ class Dataspace : public Identity, public Dimensions {
             // if the arguments [offsets], [strides] and [block_sizes] are
             // empty, the offsets will be 0, the stride will be 1,
             // and each block will simply be a single element of data.
+            //
+            // if any of [offsets] are negative, they are intepreted as offsets from the end
+            // of that dimensions, just like in Python
 
             // if we haven't selected anything, do nothing
             if (block_counts.size() == 0) return;
 
             // if offsets is empty, then set the offsets to 0
             if (offsets.size() == 0) offsets.resize(block_counts.size(), 0);
+
+            // interpret any negative offset as an offset backwards from
+            // the end of the dataset in the respective dimension
+            for (int i = 0; i < rank(); ++i) {
+                if (offsets[i] < 0) {
+                    offsets[i] = length(i) + offsets[i] % length(i);
+                }
+            }
 
             const auto h_offsets = getSizeVectorH(offsets);
             const auto h_block_counts = getSizeVectorH(block_counts);
@@ -319,6 +331,40 @@ class Dataset : public NamedIdentity, public DataType {
             assert(status >= 0);
         }
 
+        void read(const std::vector<int>& offsets, Data& data) {
+            // read data from this dataset, using the supplied offsets
+            // with a stride of 1, block count set to the dimensionality of data,
+            // and a block shape of 1 data element.
+            Dataspace hyperslab = get_space();
+            hyperslab.select_contiguous(offsets, data.dimensions());
+
+            read(hyperslab, data);
+        }
+
+        template<typename T>
+        std::vector<T> read(const std::vector<int>& offsets,
+                            const std::vector<int>& read_dims)
+        {
+            // takes the supplied offsets and the dimensions of the data to read
+            // and returns a std::vector with the requested data, flattened to 1D
+
+            // first, figure out how many data elements to read
+            int size_data = 1;
+            for (const auto& d : read_dims) {
+                size_data *= d;
+            }
+
+            // now create a vector to hold them
+            std::vector<T> datavector(size_data);
+
+            // and create a data object that knows how to read that data
+            Data data("data", datatype(), read_dims, datavector.data());
+
+            // read the data and return the vector
+            read(offsets, data);
+            return datavector;
+        }
+
         template<typename T, typename F>
         int search1D(F test, bool search_from_end = false) {
             // return the first index in the dataset for which test(element) returns true
@@ -404,6 +450,29 @@ class Location : public NamedIdentity {
             hid_t ds_id = H5Dopen(id(), dataset_name.c_str(), H5P_DEFAULT);
             Dataset dataset(dataset_name, ds_id);
             return dataset;
+        }
+
+        template<typename T>
+        std::vector<T> read_dataset(const std::string& dataset_name,
+                                    std::vector<int> offsets = {},
+                                    std::vector<int> read_dims = {})
+        {
+            // will return contiguous data of dimensions [read_dims] from the
+            // [dataset_name] named dataset in this location using the [offsets].
+            Dataset dataset = open_dataset(dataset_name);
+
+            // if [offsets] or [read_dims] were supplied, they should have
+            // the same length as the dataset rank.
+            if (offsets.size() > 0) assert(offsets.size() == dataset.rank());
+            if (read_dims.size() > 0) assert(read_dims.size() == dataset.rank());
+
+            // if [offsets] is not supplied, by default use offsets of 0.
+            // if [read_dims] is not supplied, by default read the entire dataset.
+            if (offsets.size() == 0) offsets.resize(dataset.rank(), 0);
+            if (read_dims.size() == 0) read_dims = dataset.dimensions();
+
+            // read and return data
+            return dataset.read<T>(offsets, read_dims);
         }
 
         Dataset create_dataset(const std::string& dataset_name,
