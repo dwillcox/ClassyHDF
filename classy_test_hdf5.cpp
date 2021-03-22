@@ -29,42 +29,43 @@ int main() {
     for(int i = 0; i < batch_size; ++i) xdata[i] = i;
 
     // store that data in a Data object
-    Data data("Indices", H5T_NATIVE_INT, xdata_dimensions, static_cast<void*>(xdata));
+    Data data("Indices", H5T_NATIVE_INT, xdata_dimensions, xdata);
 
     if (restart) {
-        /* PRINT OUT 5 ELEMENTS */
-        // print out the last 5 elements in the dataset before writing more data
-        std::vector<int> xlast_dim = {5};
-        std::vector<int> xlast(5);
-        Data dxlast("xlast", H5T_NATIVE_INT, xlast_dim, xlast.data());
+        /* PRINT OUT LAST N ELEMENTS */
+        {
+            // print out the last 5 elements in the dataset
+            std::vector<int> xlast = group2.read_dataset<int>("Indices", {-5}, {5});
 
-        // get a hyperslab for the last 5 elements of this dataset
-        Dataset dataset = group2.open_dataset("Indices");
-        Dataspace hyperslab = dataset.get_space();
-        const int num_entries = hyperslab.dimensions()[0];
-        const std::vector<int> offset = {num_entries - xlast_dim[0]};
-        hyperslab.select_contiguous(offset, xlast_dim);
-
-        // read the hyperslab from the dataset
-        dataset.read(hyperslab, dxlast);
-
-        // print out the data
-        for (const auto& i : xlast) {
-            std::cout << i << std::endl;
+            for (const auto& i : xlast) {
+                std::cout << i << std::endl;
+            }
         }
 
         /* TRIM DATASET TO REMOVE LAST MATCHING ENTRY */
-        // find the latest entry matching 7
-        auto search_fun = [](int i) -> bool {return (i==7);};
-        int loc = dataset.search1D<int>(search_fun, true); 
-        if (loc >= 0) dataset.set_extent({loc});
+        {
+            // we'll want to search & resize the dataset, so use the Dataset object
+            Dataset dataset = group2.open_dataset("Indices");
+
+            // find the latest entry matching 7
+            auto search_fun = [](int i) -> bool {return (i==7);};
+            const bool search_backwards = true;
+            int loc = dataset.search1D<int>(search_fun, search_backwards);
+
+            // searchID returns an index, and since in C++ the data is 0-indexed,
+            // we can remove the found element and anything past it by setting extent to loc.
+            // (set_extent takes a number of elements, not an index)
+            if (loc >= 0) dataset.set_extent({loc});
+        }
 
         /* APPEND OUR DATA*/
-        group2.append(data);
+        {
+            group2.append(data);
+        }
     } else {
         // create a new chunked dataset in this group and write data
-        std::vector<int> chunk_dimensions = {5};
-        group2.create_dataset(data, chunk_dimensions);
+        const int chunk_size = 5;
+        group2.create_dataset(data, {chunk_size});
     }
 
     return 0;
