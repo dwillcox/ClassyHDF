@@ -1,0 +1,10 @@
+CEXE_headers += ClassyHDF_Types.H
+CEXE_headers += ClassyHDF_Identity.H
+CEXE_headers += ClassyHDF_Dimensions.H
+CEXE_headers += ClassyHDF_Data.H
+CEXE_headers += ClassyHDF_Dataspace.H
+CEXE_headers += ClassyHDF_Dataset.H
+CEXE_headers += ClassyHDF_Location.H
+CEXE_headers += ClassyHDF_Group.H
+CEXE_headers += ClassyHDF_File.H
+CEXE_headers += ClassyHDF.H
