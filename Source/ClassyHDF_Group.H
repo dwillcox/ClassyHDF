@@ -11,6 +11,8 @@ namespace ClassyHDF {
 
 class Group : public Location<Group> {
     public:
+        Group() {}
+
         Group(const Location& location, const std::string& group_name) {
             // set our name
             set_name(group_name);

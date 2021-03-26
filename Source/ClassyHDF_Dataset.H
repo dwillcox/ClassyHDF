@@ -13,6 +13,8 @@ namespace ClassyHDF {
 
 class Dataset : public NamedIdentity, public DataType {
     public:
+        Dataset() {}
+
         Dataset(const std::string& ds_name, hid_t ds_id) {
             set_name(ds_name);
             set_id(ds_id);

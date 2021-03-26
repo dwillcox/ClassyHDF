@@ -15,6 +15,8 @@ namespace FileMode {
 
 class File : public Location<Group> {
     public:
+        File() {}
+
         File(const std::string& file_name, const int access_type = FileMode::rw) {
             // set our name
             set_name(file_name);
