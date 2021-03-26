@@ -139,7 +139,7 @@ class Location : public NamedIdentity {
         {
             // if dimensions & chunk_dimensions are not passed,
             // assume a 1D dataset and guess at a reasonable chunk size
-            if (dimensions.size() == 0) dimensions = {1};
+            if (dimensions.size() == 0) dimensions = {0};
             if (chunk_dimensions.size() == 0) chunk_dimensions = {256};
 
             return create_dataset(dataset_name, CppTypeToHDF<T>(),
