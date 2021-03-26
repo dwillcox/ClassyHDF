@@ -12,23 +12,23 @@ namespace ClassyHDF {
     // C++ types to avoid using an unintended HDF5 type
     // relying on the fact that sizeof is never 0 for a
     // pointer to any type
-    template<typename T>
+    template<typename T> inline
     hid_t CppTypeToHDF() { static_assert(!sizeof(T*), "No HDF type mapped to this C++ type."); return 0; };
 
     // map char to H5T_NATIVE_CHAR
-    template<>
+    template<> inline
     hid_t CppTypeToHDF<char>() { return H5T_NATIVE_CHAR; };
 
     // map int to H5T_NATIVE_INT
-    template<>
+    template<> inline
     hid_t CppTypeToHDF<int>() { return H5T_NATIVE_INT; };
 
     // map float to H5T_NATIVE_FLOAT
-    template<>
+    template<> inline
     hid_t CppTypeToHDF<float>() { return H5T_NATIVE_FLOAT; };
 
     // map double to H5T_NATIVE_DOUBLE
-    template<>
+    template<> inline
     hid_t CppTypeToHDF<double>() { return H5T_NATIVE_DOUBLE; };
 
 }
