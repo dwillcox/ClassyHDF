@@ -18,6 +18,7 @@ class Identity {
         Identity(hid_t id) { set_id(id); }
         hid_t id() const { return m_id; }
         bool initialized() const { return m_initialized; }
+        void invalidate() { m_id = -1; m_initialized = false; }
 };
 
 class NamedIdentity : public Identity {

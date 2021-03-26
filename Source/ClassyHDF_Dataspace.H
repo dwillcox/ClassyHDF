@@ -28,8 +28,10 @@ class Dataspace : public Identity, public Dimensions {
         }
 
         ~Dataspace() {
-            herr_t status = H5Sclose(id());
-            assert(status >= 0);
+            if (initialized()) {
+                herr_t status = H5Sclose(id());
+                assert(status >= 0);
+            }
         }
 
         // declare a move constructor so we ensure the destructor is
@@ -47,7 +49,12 @@ class Dataspace : public Identity, public Dimensions {
             set_dimensions(other.dimensions());
             m_max_dimensions.resize(rank(), H5S_UNLIMITED);
 
-            if (other.initialized()) set_id(other.id());
+            if (other.initialized()) {
+                // take the other's ID & invalidate it in other so
+                // it is not freed in other's destructor
+                set_id(other.id());
+                other.invalidate();
+            }
 
             return *this;
         }

@@ -37,8 +37,10 @@ class File : public Location<Group> {
         }
 
         ~File() {
-            herr_t status = H5Fclose(id());
-            assert(status >= 0);
+            if (initialized()) {
+                herr_t status = H5Fclose(id());
+                assert(status >= 0);
+            }
         }
 
         // declare a move constructor so we ensure the destructor is
@@ -54,8 +56,14 @@ class File : public Location<Group> {
             }
 
             set_name(other.name());
-            if (other.initialized()) set_id(other.id());
             set_existed(other.existed());
+
+            if (other.initialized()) {
+                // take the other's ID & invalidate it in other so
+                // it is not freed in other's destructor
+                set_id(other.id());
+                other.invalidate();
+            }
 
             return *this;
         }
