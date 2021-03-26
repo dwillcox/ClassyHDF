@@ -13,10 +13,6 @@ namespace ClassyHDF {
 
 class Dataset : public NamedIdentity, public DataType {
     public:
-        // declare a move constructor so we ensure the destructor is
-        // not called when we return an object of this class by value
-        Dataset(Dataset&&) = default;
-
         Dataset(const std::string& ds_name, hid_t ds_id) {
             set_name(ds_name);
             set_id(ds_id);
@@ -33,6 +29,35 @@ class Dataset : public NamedIdentity, public DataType {
             herr_t status = H5Dclose(id());
             assert(status >= 0);
         }
+
+        // declare a move constructor so we ensure the destructor is
+        // not called when we return an object of this class by value
+        Dataset(Dataset&&) = default;
+
+        // declare a move assignment operator
+        Dataset& operator=(Dataset&& other)
+        {
+            // for move assignments, if we currently own an identity, release it first
+            if (initialized() && this != &other) {
+                this->~Dataset();
+            }
+
+            set_name(other.name());
+            if (other.initialized()) set_id(other.id());
+            set_datatype(other.datatype());
+
+            return *this;
+        }
+
+        // now, we must forbid copying any class that derives from Identity
+        // because either copy could free its HDF5 library resources and
+        // leave the other in an invalid state
+        //
+        // delete the copy constructor
+        Dataset(const Dataset& other) = delete;
+        //
+        // delete the copy assignment operator
+        Dataset& operator=(const Dataset& other) = delete;
 
         Dataspace get_space() const {
             // return a Dataspace object with the current data space of this dataset
@@ -90,14 +115,19 @@ class Dataset : public NamedIdentity, public DataType {
             set_extent(new_dataset_size);
         }
 
-        void write(const Dataspace& target_space, const Data& data) {
+        template<typename T>
+        void write(const Dataspace& target_space, const Data<T>& data) {
+            // first assert the types match
+            assert(is_equal_datatype(data.datatype()));
+
             // write the data stored in the Data object to the target dataspace
             herr_t status = H5Dwrite(id(), datatype(), data.dataspace().id(),
                                      target_space.id(), H5P_DEFAULT, data.data());
             assert(status >= 0);
         }
 
-        void append(const Data& data) {
+        template<typename T>
+        void append(const Data<T>& data) {
             // expands the dataset to accomodate the new data and writes it
 
             // get the current dimensions before expanding the dataset
@@ -117,14 +147,19 @@ class Dataset : public NamedIdentity, public DataType {
             write(hyperslab, data);
         }
 
-        void read(const Dataspace& hyperslab, Data& data) {
+        template<typename T>
+        void read(const Dataspace& hyperslab, Data<T>& data) {
+            // first assert the types match
+            assert(is_equal_datatype(data.datatype()));
+
             // read from the hyperslab to fill Data
             herr_t status = H5Dread(id(), data.datatype(), data.dataspace().id(),
                                     hyperslab.id(), H5P_DEFAULT, data.data());
             assert(status >= 0);
         }
 
-        void read(const std::vector<int>& offsets, Data& data) {
+        template<typename T>
+        void read(const std::vector<int>& offsets, Data<T>& data) {
             // read data from this dataset, using the supplied offsets
             // with a stride of 1, block count set to the dimensionality of data,
             // and a block shape of 1 data element.
@@ -161,7 +196,7 @@ class Dataset : public NamedIdentity, public DataType {
             std::vector<T> datavector(size_data);
 
             // and create a data object that knows how to read that data
-            Data data("data", datatype(), read_dims, datavector.data());
+            Data<T> data("data", read_dims, datavector.data());
 
             // read the data and return the vector
             read(offsets, data);
@@ -180,7 +215,7 @@ class Dataset : public NamedIdentity, public DataType {
 
             std::vector<int> edims = {1};
             std::vector<T> element(1); 
-            Data delement("element", datatype(), edims, element.data());
+            Data<T> delement("element", edims, element.data());
 
             const auto ds_dims = dimensions();
             std::vector<int> index(rank(), 0);

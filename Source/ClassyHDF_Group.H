@@ -11,10 +11,6 @@ namespace ClassyHDF {
 
 class Group : public Location<Group> {
     public:
-        // declare a move constructor so we ensure the destructor is
-        // not called when we return an object of this class by value
-        Group(Group&&) = default;
-
         Group(const Location& location, const std::string& group_name) {
             // set our name
             set_name(group_name);
@@ -35,6 +31,35 @@ class Group : public Location<Group> {
             herr_t status = H5Gclose(id());
             assert(status >= 0);
         }
+
+        // declare a move constructor so we ensure the destructor is
+        // not called when we return an object of this class by value
+        Group(Group&&) = default;
+
+        // declare a move assignment operator
+        Group& operator=(Group&& other)
+        {
+            // for move assignments, if we currently own an identity, release it first
+            if (initialized() && this != &other) {
+                this->~Group();
+            }
+
+            set_name(other.name());
+            if (other.initialized()) set_id(other.id());
+            set_existed(other.existed());
+
+            return *this;
+        }
+
+        // now, we must forbid copying any class that derives from Identity
+        // because either copy could free its HDF5 library resources and
+        // leave the other in an invalid state
+        //
+        // delete the copy constructor
+        Group(const Group& other) = delete;
+        //
+        // delete the copy assignment operator
+        Group& operator=(const Group& other) = delete;
 };
 
 }

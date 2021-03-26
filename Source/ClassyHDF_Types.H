@@ -3,7 +3,35 @@
 
 #include <vector>
 #include "hdf5.h"
-// todo -- add map for C++/HDF types
+
+namespace ClassyHDF {
+
+    /* make a templated C++/HDF type mapping */
+
+    // generate a compile-time error for nonspecialized
+    // C++ types to avoid using an unintended HDF5 type
+    // relying on the fact that sizeof is never 0 for a
+    // pointer to any type
+    template<typename T>
+    hid_t CppTypeToHDF() { static_assert(!sizeof(T*), "No HDF type mapped to this C++ type."); return 0; };
+
+    // map char to H5T_NATIVE_CHAR
+    template<>
+    hid_t CppTypeToHDF<char>() { return H5T_NATIVE_CHAR; };
+
+    // map int to H5T_NATIVE_INT
+    template<>
+    hid_t CppTypeToHDF<int>() { return H5T_NATIVE_INT; };
+
+    // map float to H5T_NATIVE_FLOAT
+    template<>
+    hid_t CppTypeToHDF<float>() { return H5T_NATIVE_FLOAT; };
+
+    // map double to H5T_NATIVE_DOUBLE
+    template<>
+    hid_t CppTypeToHDF<double>() { return H5T_NATIVE_DOUBLE; };
+
+}
 
 namespace ClassyHDF {
 
@@ -60,6 +88,10 @@ class DataType {
         }
 
         hid_t datatype() const { return m_datatype; }
+
+        bool is_equal_datatype(const hid_t& other_type) {
+            return static_cast<bool>(H5Tequal(datatype(), other_type));
+        }
 };
 
 }

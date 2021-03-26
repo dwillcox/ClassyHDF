@@ -11,12 +11,12 @@ using namespace ClassyHDF;
  */
 
 void write_test_file(const std::string& filename) {
-    File file(filename);
+    File file(filename, FileMode::trunc);
     Group group1 = file.get_group("Data");
     Group group2 = group1.get_group("GroupA");
     
     // specify the size and rank of the data we want to work with
-    const int batch_size = 15;
+    const int batch_size = 10;
 
     // make some data to write ...
     std::vector<int> xdata_dimensions = {batch_size};
@@ -24,7 +24,7 @@ void write_test_file(const std::string& filename) {
     for(int i = 0; i < batch_size; ++i) xdata[i] = i;
 
     // store that data in a Data object
-    Data data("Indices", H5T_NATIVE_INT, xdata_dimensions, xdata);
+    Data<int> data("Indices", xdata_dimensions, xdata);
 
     // create a new chunked dataset in this group and write data
     const int chunk_size = 5;
@@ -36,18 +36,8 @@ void do_append(const std::string& filename) {
     Group group1 = file.get_group("Data");
     Group group2 = group1.get_group("GroupA");
 
-    // specify the size and rank of the data we want to work with
-    const int batch_size = 15;
-
-    // make some data to write ...
-    int xdata[batch_size];
-    for(int i = 0; i < batch_size; ++i) xdata[i] = i;
-
-    // store that data in a Data object
-    Data data("Indices", H5T_NATIVE_INT, {batch_size}, xdata);
-
     // append data to the dataset
-    group2.append(data);
+    group2.append(Data<int>("Indices", {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}));
 }
 
 bool do_test(const std::string& filename) {
@@ -59,11 +49,11 @@ bool do_test(const std::string& filename) {
     std::vector<int> xlast = group2.read_dataset<int>("Indices");
 
     bool success = true;
-    for (int i = 0; i < 30; ++i) {
-        if (i < 15) {
+    for (int i = 0; i < 20; ++i) {
+        if (i < 10) {
             success = success && (xlast[i] == i);
         } else {
-            success = success && (xlast[i] == i-15);
+            success = success && (xlast[i] == i-10);
         }
     }
     return success;

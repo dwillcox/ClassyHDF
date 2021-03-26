@@ -14,10 +14,6 @@ class Dataspace : public Identity, public Dimensions {
     private:
         std::vector<hsize_t> m_max_dimensions;
     public:
-        // declare a move constructor so we ensure the destructor is
-        // not called when we return an object of this class by value
-        Dataspace(Dataspace&&) = default;
-
         Dataspace() {}
 
         Dataspace(const std::vector<int>& dimensions) {
@@ -35,6 +31,36 @@ class Dataspace : public Identity, public Dimensions {
             herr_t status = H5Sclose(id());
             assert(status >= 0);
         }
+
+        // declare a move constructor so we ensure the destructor is
+        // not called when we return an object of this class by value
+        Dataspace(Dataspace&&) = default;
+
+        // declare a move assignment operator
+        Dataspace& operator=(Dataspace&& other)
+        {
+            // for move assignments, if we currently own an identity, release it first
+            if (initialized() && this != &other) {
+                this->~Dataspace();
+            }
+
+            set_dimensions(other.dimensions());
+            m_max_dimensions.resize(rank(), H5S_UNLIMITED);
+
+            if (other.initialized()) set_id(other.id());
+
+            return *this;
+        }
+
+        // now, we must forbid copying any class that derives from Identity
+        // because either copy could free its HDF5 library resources and
+        // leave the other in an invalid state
+        //
+        // delete the copy constructor
+        Dataspace(const Dataspace& other) = delete;
+        //
+        // delete the copy assignment operator
+        Dataspace& operator=(const Dataspace& other) = delete;
 
         void create(const std::vector<int>& ds_dimensions) {
             // we can only create this dataspace if it is currently uninitialized

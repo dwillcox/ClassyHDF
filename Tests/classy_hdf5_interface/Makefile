@@ -6,5 +6,8 @@ all:
 	g++ -o resize.exe resize.cpp -I../../Source -I$(HDF5_HOME)/include -L$(HDF5_HOME)/lib -lhdf5 -lhdf5_cpp -lsz -lz -lm
 	g++ -o search.exe search.cpp -I../../Source -I$(HDF5_HOME)/include -L$(HDF5_HOME)/lib -lhdf5 -lhdf5_cpp -lsz -lz -lm
 
+test: all
+	./append.exe && ./get_last_N.exe && ./resize.exe && ./search.exe
+
 clean:
 	rm *.exe *.h5

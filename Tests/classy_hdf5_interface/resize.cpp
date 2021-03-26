@@ -11,7 +11,7 @@ using namespace ClassyHDF;
  */
 
 void write_test_file(const std::string& filename) {
-    File file(filename);
+    File file(filename, FileMode::trunc);
     Group group1 = file.get_group("Data");
     Group group2 = group1.get_group("GroupA");
     
@@ -24,7 +24,7 @@ void write_test_file(const std::string& filename) {
     for(int i = 0; i < batch_size; ++i) xdata[i] = i;
 
     // store that data in a Data object
-    Data data("Indices", H5T_NATIVE_INT, xdata_dimensions, xdata);
+    Data<int> data("Indices", xdata_dimensions, xdata, H5T_NATIVE_INT);
 
     // create a new chunked dataset in this group and write data
     const int chunk_size = 5;

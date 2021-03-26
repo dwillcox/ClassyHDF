@@ -56,6 +56,22 @@ class Location : public NamedIdentity {
             return dataset;
         }
 
+        bool has_dataset(const std::string& dataset_name) {
+            bool dataset_exists = false;
+            hid_t ds_id = -1;
+
+            H5E_BEGIN_TRY
+                ds_id = H5Dopen(id(), dataset_name.c_str(), H5P_DEFAULT);
+            H5E_END_TRY
+
+            if (ds_id >= 0) {
+                dataset_exists = true;
+                herr_t status = H5Dclose(ds_id);
+                assert(status >= 0);
+            }
+            return dataset_exists;
+        }
+
         template<typename T>
         std::vector<T> read_dataset(const std::string& dataset_name,
                                     const std::vector<int>& offsets = {},
@@ -115,7 +131,24 @@ class Location : public NamedIdentity {
             return dataset;
         }
 
-        Dataset create_dataset(const Data& data,
+        template<typename T>
+        Dataset create_dataset(const std::string& dataset_name,
+                               std::vector<int> dimensions = {},
+                               std::vector<int> chunk_dimensions = {},
+                               const int compression_level = 0)
+        {
+            // if dimensions & chunk_dimensions are not passed,
+            // assume a 1D dataset and guess at a reasonable chunk size
+            if (dimensions.size() == 0) dimensions = {1};
+            if (chunk_dimensions.size() == 0) chunk_dimensions = {256};
+
+            return create_dataset(dataset_name, CppTypeToHDF<T>(),
+                                  dimensions, chunk_dimensions,
+                                  compression_level);
+        }
+
+        template<typename T>
+        Dataset create_dataset(const Data<T>& data,
                                const std::vector<int>& chunk_dimensions,
                                const int compression_level = 0)
         {
@@ -136,7 +169,8 @@ class Location : public NamedIdentity {
             return dataset;
         }
 
-        Dataset append(const Data& data)
+        template<typename T>
+        Dataset append(const Data<T>& data)
         {
             // open dataset and append the data, returning the Dataset object
 
