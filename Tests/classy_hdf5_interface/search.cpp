@@ -52,7 +52,7 @@ bool do_test(const std::string& filename) {
     // element to be truncated.
     dataset.set_extent({loc});
 
-    return (loc == 7);
+    return (loc == 9);
 }
 
 int main() {

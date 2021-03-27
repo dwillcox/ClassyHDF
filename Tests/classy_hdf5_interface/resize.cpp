@@ -37,7 +37,7 @@ void do_resize(const std::string& filename) {
     Group group2 = group1.get_group("GroupA");
 
     // specify the size and rank of the data we want to work with
-    const int new_size = 10;
+    const int new_size = 2;
 
     // open the dataset
     Dataset dataset = group2.open_dataset("Indices");

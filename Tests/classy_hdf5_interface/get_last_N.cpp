@@ -41,7 +41,7 @@ bool do_test(const std::string& filename) {
 
     bool success = true;
     success = success && (xlast[0] == 10);
-    success = success && (xlast[1] == 11);
+    success = success && (xlast[1] == 21);
     success = success && (xlast[2] == 12);
     success = success && (xlast[3] == 13);
     success = success && (xlast[4] == 14);
