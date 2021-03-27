@@ -5,81 +5,50 @@ on:
     branches: main
 
 jobs:
-  build_hdf5:
-    name: Build HDF5
+  build:
     runs-on: ubuntu-latest
-    steps:
-
-    - name: Download HDF5
-      run: |
-        wget "https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.0/src/hdf5-1.12.0.tar.gz"
-        tar -zxvf hdf5-1.12.0.tar.gz
-
-    - name: Compile HDF5
-      run: |
-        cd hdf5-1.12.0
-        ./configure --prefix=$(pwd)/../hdf5-1.12.0-install
-        make install
-        cd ..
-
-  build_classyhdf:
-    name: Build ClassyHDF
-    runs-on: ubuntu-latest
-    needs: build_hdf5
     steps:
 
     - uses: actions/checkout@v2
       with:
         ref: refs/heads/${{ github.head_ref }}
 
+    - name: Download HDF5
+      run: |
+        wget "https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.0/src/hdf5-1.12.0.tar.gz"
+        tar -zxvf hdf5-1.12.0.tar.gz
+
+    - name: Build HDF5
+      run: |
+        cd hdf5-1.12.0
+        ./configure --prefix=$(pwd)/../hdf5-1.12.0-install
+        make install
+        cd ..
+
     - name: Build ClassyHDF Tests
       run: |
         cd Tests/classy_hdf5_interface
         make HDF5_HOME=../../hdf5-1.12.0-install EXTRA_LIBS=""
 
-  test_append:
-    name: Test ClassyHDF - Append
-    runs-on: ubuntu-latest
-    needs: build_classyhdf
-    steps:
-
-    - name: Test - Append
+    - name: Run ClassyHDF Test - Append
       run: |
         cd Tests/classy_hdf5_interface
         export LD_LIBRARY_PATH="../../hdf5-1.12.0-install/lib:$LD_LIBRARY_PATH"
         ./append.exe
 
-  test_get_last_N:
-    name: Test ClassyHDF - Get Last N
-    runs-on: ubuntu-latest
-    needs: build_classyhdf
-    steps:
-
-    - name: Test - Get Last N
+    - name: Run ClassyHDF Test - Get Last N
       run: |
         cd Tests/classy_hdf5_interface
         export LD_LIBRARY_PATH="../../hdf5-1.12.0-install/lib:$LD_LIBRARY_PATH"
         ./get_last_N.exe
 
-  test_resize:
-    name: Test ClassyHDF - Resize
-    runs-on: ubuntu-latest
-    needs: build_classyhdf
-    steps:
-
-    - name: Test - Resize
+    - name: Run ClassyHDF Test - Resize
       run: |
         cd Tests/classy_hdf5_interface
         export LD_LIBRARY_PATH="../../hdf5-1.12.0-install/lib:$LD_LIBRARY_PATH"
         ./resize.exe
 
-  test_search:
-    name: Test ClassyHDF - Search
-    runs-on: ubuntu-latest
-    needs: build_classyhdf
-    steps:
-
-    - name: Test - Search
+    - name: Run ClassyHDF Test - Search
       run: |
         cd Tests/classy_hdf5_interface
         export LD_LIBRARY_PATH="../../hdf5-1.12.0-install/lib:$LD_LIBRARY_PATH"
