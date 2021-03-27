@@ -1,10 +1,11 @@
-HDF5_HOME=/home/eugene/dev/hdf5/hdf5-1.12.0-cxx
+HDF5_HOME ?= /home/eugene/dev/hdf5/hdf5-1.12.0-cxx
+EXTRA_LIBS ?= -lsz -lz -lm
 
 all:
-	g++ -o append.exe append.cpp -I../../Source -I$(HDF5_HOME)/include -L$(HDF5_HOME)/lib -lhdf5 -lsz -lz -lm
-	g++ -o get_last_N.exe get_last_N.cpp -I../../Source -I$(HDF5_HOME)/include -L$(HDF5_HOME)/lib -lhdf5 -lsz -lz -lm
-	g++ -o resize.exe resize.cpp -I../../Source -I$(HDF5_HOME)/include -L$(HDF5_HOME)/lib -lhdf5 -lsz -lz -lm
-	g++ -o search.exe search.cpp -I../../Source -I$(HDF5_HOME)/include -L$(HDF5_HOME)/lib -lhdf5 -lsz -lz -lm
+	g++ -o append.exe append.cpp -I../../Source -I$(HDF5_HOME)/include -L$(HDF5_HOME)/lib -lhdf5 $(EXTRA_LIBS)
+	g++ -o get_last_N.exe get_last_N.cpp -I../../Source -I$(HDF5_HOME)/include -L$(HDF5_HOME)/lib -lhdf5 $(EXTRA_LIBS)
+	g++ -o resize.exe resize.cpp -I../../Source -I$(HDF5_HOME)/include -L$(HDF5_HOME)/lib -lhdf5 $(EXTRA_LIBS)
+	g++ -o search.exe search.cpp -I../../Source -I$(HDF5_HOME)/include -L$(HDF5_HOME)/lib -lhdf5 $(EXTRA_LIBS)
 
 test: all
 	./append.exe
