@@ -33,23 +33,23 @@ jobs:
     - name: Run ClassyHDF Test - Append
       run: |
         cd Tests/classy_hdf5_interface
-        export LD_LIBRARY_PATH="../../hdf5-1.12.0-install/lib:$(LD_LIBRARY_PATH)"
+        export LD_LIBRARY_PATH="../../hdf5-1.12.0-install/lib:$LD_LIBRARY_PATH"
         ./append.exe
 
     - name: Run ClassyHDF Test - Get Last N
       run: |
         cd Tests/classy_hdf5_interface
-        export LD_LIBRARY_PATH="../../hdf5-1.12.0-install/lib:$(LD_LIBRARY_PATH)"
+        export LD_LIBRARY_PATH="../../hdf5-1.12.0-install/lib:$LD_LIBRARY_PATH"
         ./get_last_N.exe
 
     - name: Run ClassyHDF Test - Resize
       run: |
         cd Tests/classy_hdf5_interface
-        export LD_LIBRARY_PATH="../../hdf5-1.12.0-install/lib:$(LD_LIBRARY_PATH)"
+        export LD_LIBRARY_PATH="../../hdf5-1.12.0-install/lib:$LD_LIBRARY_PATH"
         ./resize.exe
 
     - name: Run ClassyHDF Test - Search
       run: |
         cd Tests/classy_hdf5_interface
-        export LD_LIBRARY_PATH="../../hdf5-1.12.0-install/lib:$(LD_LIBRARY_PATH)"
+        export LD_LIBRARY_PATH="../../hdf5-1.12.0-install/lib:$LD_LIBRARY_PATH"
         ./search.exe
