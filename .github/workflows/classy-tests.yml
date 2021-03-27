@@ -1,0 +1,47 @@
+name: ClassyHDF-Tests
+
+on:
+  pull_request:
+    branches: development
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+
+    - uses: actions/checkout@v2
+      with:
+        ref: refs/heads/${{ github.head_ref }}
+
+    - name: Download HDF5
+      run: |
+        wget "https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.12/hdf5-1.12.0/src/hdf5-1.12.0.tar.gz"
+        tar -zxvf hdf5-1.12.0.tar.gz
+
+    - name: Build HDF5
+      run: |
+        cd hdf5-1.12.0
+        ./configure --prefix=$(pwd)/../hdf5-1.12.0-install
+        make install
+        cd ..
+
+    - name: Build ClassyHDF Tests
+      run: |
+        cd Tests/classy_hdf5_interface
+        make HDF5_HOME=../../hdf5-1.12.0-install EXTRA_LIBS=""
+
+    - name: Run ClassyHDF Test - Append
+      run: |
+        ./append.exe
+
+    - name: Run ClassyHDF Test - Get Last N
+      run: |
+        ./get_last_N.exe
+
+    - name: Run ClassyHDF Test - Resize
+      run: |
+        ./resize.exe
+
+    - name: Run ClassyHDF Test - Search
+      run: |
+        ./search.exe
