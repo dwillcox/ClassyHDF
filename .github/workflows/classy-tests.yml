@@ -32,16 +32,20 @@ jobs:
 
     - name: Run ClassyHDF Test - Append
       run: |
+        cd Tests/classy_hdf5_interface
         ./append.exe
 
     - name: Run ClassyHDF Test - Get Last N
       run: |
+        cd Tests/classy_hdf5_interface
         ./get_last_N.exe
 
     - name: Run ClassyHDF Test - Resize
       run: |
+        cd Tests/classy_hdf5_interface
         ./resize.exe
 
     - name: Run ClassyHDF Test - Search
       run: |
+        cd Tests/classy_hdf5_interface
         ./search.exe
