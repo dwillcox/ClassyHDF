@@ -71,8 +71,11 @@ int main() {
 
     do_resize(filename);
 
-    if (do_test(filename)) std::cout << "success" << std::endl;
-    else std::cout << "failure" << std::endl;
-
-    return 0;
+    if (do_test(filename)) {
+        std::cout << "success" << std::endl;
+        return 0;
+    } else {
+        std::cout << "failure" << std::endl;
+        return -1;
+    }
 }
