@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include "hdf5.h"
+#include "hdf5_hl.h"
 
 #include "ClassyHDF_Identity.H"
 #include "ClassyHDF_Data.H"
@@ -177,6 +178,121 @@ class Location : public NamedIdentity {
             Dataset dataset = open_dataset(data.name());
             dataset.append(data);
             return dataset;
+        }
+
+        template<typename T>
+        void attr(const std::string& attr_name, const T& attr_value)
+        {
+            // Calling the default template means no attr function
+            // is implemented for the requested type
+            assert(false);
+        }
+
+        template<>
+        void attr<std::string>(const std::string& attr_name, const std::string& attr_value)
+        {
+            TGroup gattr = get_group("Attributes");
+
+            herr_t status = H5LTset_attribute_string(id(), "Attributes",
+                                                     attr_name.c_str(),
+                                                     attr_value.c_str());
+            assert(status >= 0);
+        }
+
+        template<>
+        void attr<int>(const std::string& attr_name, const int& attr_value)
+        {
+            TGroup gattr = get_group("Attributes");
+
+            herr_t status = H5LTset_attribute_int(id(), "Attributes",
+                                                  attr_name.c_str(),
+                                                  &attr_value, 1);
+            assert(status >= 0);
+        }
+
+        template<>
+        void attr<float>(const std::string& attr_name, const float& attr_value)
+        {
+            TGroup gattr = get_group("Attributes");
+
+            herr_t status = H5LTset_attribute_float(id(), "Attributes",
+                                                    attr_name.c_str(),
+                                                    &attr_value, 1);
+            assert(status >= 0);
+        }
+
+        template<>
+        void attr<double>(const std::string& attr_name, const double& attr_value)
+        {
+            TGroup gattr = get_group("Attributes");
+
+            herr_t status = H5LTset_attribute_double(id(), "Attributes",
+                                                     attr_name.c_str(),
+                                                     &attr_value, 1);
+            assert(status >= 0);
+        }
+
+        template<typename T>
+        T attr(const std::string& attr_name)
+        {
+            // Calling the default template means no attr function
+            // is implemented for the requested type
+            assert(false);
+        }
+
+        template<>
+        std::string attr<std::string>(const std::string& attr_name)
+        {
+            char* buffer;
+            int size_buffer;
+            herr_t status = H5LTget_attribute_ndims(id(), "Attributes",
+                                                    attr_name.c_str(), &size_buffer);
+            assert(status >= 0);
+
+            buffer = new char[size_buffer];
+            status = H5LTget_attribute_string(id(), "Attributes",
+                                              attr_name.c_str(), buffer);
+            std::string sattr = buffer;
+            delete buffer;
+            assert(status >= 0);
+
+            return sattr;
+        }
+
+        template<>
+        int attr<int>(const std::string& attr_name)
+        {
+            int attr_value = 0;
+
+            herr_t status = H5LTget_attribute_int(id(), "Attributes",
+                                                  attr_name.c_str(), &attr_value);
+            assert(status >= 0);
+
+            return attr_value;
+        }
+
+        template<>
+        float attr<float>(const std::string& attr_name)
+        {
+            float attr_value = 0;
+
+            herr_t status = H5LTget_attribute_float(id(), "Attributes",
+                                                    attr_name.c_str(), &attr_value);
+            assert(status >= 0);
+
+            return attr_value;
+        }
+
+        template<>
+        double attr<double>(const std::string& attr_name)
+        {
+            double attr_value = 0;
+
+            herr_t status = H5LTget_attribute_double(id(), "Attributes",
+                                                     attr_name.c_str(), &attr_value);
+            assert(status >= 0);
+
+            return attr_value;
         }
 };
 

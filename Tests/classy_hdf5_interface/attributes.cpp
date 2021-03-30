@@ -17,23 +17,10 @@ void write_test_file(const std::string& filename) {
     Group group2 = group1.get_group("GroupA");
     
     // put some attributes into the "GroupA" group
-    herr_t status = H5LTset_attribute_string(group1.id(), "GroupA", "TestAttribute", "Hello World!");
-    assert(status >= 0);
-
-    int* ibuf = new int[1];
-    ibuf[0] = 5;
-    status = H5LTset_attribute_int(group1.id(), "GroupA", "TestAttInt", ibuf, 1);
-    delete ibuf;
-
-    float* fbuf = new float[1];
-    fbuf[0] = -1.0;
-    status = H5LTset_attribute_float(group1.id(), "GroupA", "TestAttFloat", fbuf, 1);
-    delete fbuf;
-
-    double* dbuf = new double[1];
-    dbuf[0] = -2.0;
-    status = H5LTset_attribute_double(group1.id(), "GroupA", "TestAttDouble", dbuf, 1);
-    delete dbuf;
+    group2.attr<std::string>("TestAttribute", "Hello World!");
+    group2.attr<int>("TestAttInt", 5);
+    group2.attr<float>("TestAttFloat", -1.0);
+    group2.attr<double>("TestAttDouble", -2.0);
 }
 
 bool do_test(const std::string& filename) {
@@ -44,34 +31,17 @@ bool do_test(const std::string& filename) {
     bool success = true;
 
     // get some attributes from the "GroupA" group
-    herr_t status;
+    std::string stest = group2.attr<std::string>("TestAttribute");
+    success = success && (stest == "Hello World!");
 
-    char* buffer;
-    int size_buffer;
-    status = H5LTget_attribute_ndims(group1.id(), "GroupA", "TestAttribute", &size_buffer);
-    buffer = new char[size_buffer];
-    status = H5LTget_attribute_string(group1.id(), "GroupA", "TestAttribute", buffer);
-    std::string sbuffer = buffer;
-    success = success && (sbuffer == "Hello World!");
-    delete buffer;
+    int itest = group2.attr<int>("TestAttInt"); 
+    success = success && (itest == 5);
 
-    int* ibuf = new int[1];
-    ibuf[0] = 0;
-    status = H5LTget_attribute_int(group1.id(), "GroupA", "TestAttInt", ibuf);
-    success = success && (ibuf[0] == 5);
-    delete ibuf;
+    float ftest = group2.attr<float>("TestAttFloat");
+    success = success && (ftest == -1.0);
 
-    float* fbuf = new float[1];
-    fbuf[0] = 0.0;
-    status = H5LTget_attribute_float(group1.id(), "GroupA", "TestAttFloat", fbuf);
-    success = success && (fbuf[0] == -1.0);
-    delete fbuf;
-
-    double* dbuf = new double[1];
-    dbuf[0] = 0.0;
-    status = H5LTget_attribute_double(group1.id(), "GroupA", "TestAttDouble", dbuf);
-    success = success && (dbuf[0] == -2.0);
-    delete dbuf;
+    double dtest = group2.attr<double>("TestAttDouble");
+    success = success && (dtest == -2.0);
 
     return success;
 }
