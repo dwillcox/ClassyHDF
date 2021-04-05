@@ -8,3 +8,5 @@ CEXE_headers += ClassyHDF_Location.H
 CEXE_headers += ClassyHDF_Group.H
 CEXE_headers += ClassyHDF_File.H
 CEXE_headers += ClassyHDF.H
+
+LIBRARIES += -lhdf5_hl
