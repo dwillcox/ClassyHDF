@@ -6,6 +6,7 @@
 #include "hdf5.h"
 
 #include "ClassyHDF_Group.H"
+#include "ClassyHDF_Errors.H"
 
 namespace ClassyHDF {
 
@@ -28,8 +29,8 @@ class File : public Location<Group> {
                     set_id(H5Fopen(name().c_str(), H5F_ACC_RDWR, H5P_DEFAULT));
                 H5E_END_TRY
 
-                if (access_type == FileMode::exists_is_error) {
-                    assert(id() < 0);
+                if (access_type == FileMode::exists_is_error && id() >= 0) {
+                    throw Errors::file_exists;
                 }
             }
 

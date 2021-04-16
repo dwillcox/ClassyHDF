@@ -10,5 +10,6 @@
 #include "ClassyHDF_Location.H"
 #include "ClassyHDF_Group.H"
 #include "ClassyHDF_File.H"
+#include "ClassyHDF_Errors.H"
 
 #endif
