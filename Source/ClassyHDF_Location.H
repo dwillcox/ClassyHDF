@@ -4,12 +4,124 @@
 #include <string>
 #include <vector>
 #include "hdf5.h"
+#include "hdf5_hl.h"
 
 #include "ClassyHDF_Identity.H"
 #include "ClassyHDF_Data.H"
 #include "ClassyHDF_Dataset.H"
 
 namespace ClassyHDF {
+
+namespace {
+    template<typename T, class Tloc>
+    struct Attribute {
+        static void set(const Tloc& loc, const std::string& attr_name, const T& attr_value) { assert(false); }
+        static T get(const Tloc& loc, const std::string& attr_name) { assert(false); return static_cast<T>(0); }
+    };
+
+    template<class Tloc>
+    struct Attribute<std::string, Tloc> {
+        static void set(const Tloc& loc, const std::string& attr_name, const std::string& attr_value)
+        {
+            auto gattr = loc.get_group("Attributes");
+
+            herr_t status = H5LTset_attribute_string(loc.id(), "Attributes",
+                                                    attr_name.c_str(),
+                                                    attr_value.c_str());
+            assert(status >= 0);
+        }
+
+        static std::string get(const Tloc& loc, const std::string& attr_name)
+        {
+            char* buffer;
+            int size_buffer;
+            herr_t status = H5LTget_attribute_ndims(loc.id(), "Attributes",
+                                                    attr_name.c_str(), &size_buffer);
+            assert(status >= 0);
+
+            buffer = new char[size_buffer];
+            status = H5LTget_attribute_string(loc.id(), "Attributes",
+                                                attr_name.c_str(), buffer);
+            std::string sattr = buffer;
+            delete buffer;
+            assert(status >= 0);
+
+            return sattr;
+        }
+    };
+
+    template<class Tloc>
+    struct Attribute<int, Tloc> {
+        static void set(const Tloc& loc, const std::string& attr_name, const int& attr_value)
+        {
+            auto gattr = loc.get_group("Attributes");
+
+            herr_t status = H5LTset_attribute_int(loc.id(), "Attributes",
+                                                attr_name.c_str(),
+                                                &attr_value, 1);
+            assert(status >= 0);
+        }
+
+        static int get(const Tloc& loc, const std::string& attr_name)
+        {
+            int attr_value = 0;
+
+            herr_t status = H5LTget_attribute_int(loc.id(), "Attributes",
+                                                attr_name.c_str(), &attr_value);
+            assert(status >= 0);
+
+            return attr_value;
+        }
+    };
+
+    template<class Tloc>
+    struct Attribute<float, Tloc> {
+        static void set(const Tloc& loc, const std::string& attr_name, const float& attr_value)
+        {
+            auto gattr = loc.get_group("Attributes");
+
+            herr_t status = H5LTset_attribute_float(loc.id(), "Attributes",
+                                                    attr_name.c_str(),
+                                                    &attr_value, 1);
+            assert(status >= 0);
+        }
+
+        static float get(const Tloc& loc, const std::string& attr_name)
+        {
+            float attr_value = 0;
+
+            herr_t status = H5LTget_attribute_float(loc.id(), "Attributes",
+                                                    attr_name.c_str(), &attr_value);
+            assert(status >= 0);
+
+            return attr_value;
+        }
+    };
+
+    template<class Tloc>
+    struct Attribute<double, Tloc> {
+        static void set(const Tloc& loc, const std::string& attr_name, const double& attr_value)
+        {
+            auto gattr = loc.get_group("Attributes");
+
+            herr_t status = H5LTset_attribute_double(loc.id(), "Attributes",
+                                                    attr_name.c_str(),
+                                                    &attr_value, 1);
+            assert(status >= 0);
+        }
+
+        static double get(const Tloc& loc, const std::string& attr_name)
+        {
+            double attr_value = 0;
+
+            herr_t status = H5LTget_attribute_double(loc.id(), "Attributes",
+                                                    attr_name.c_str(), &attr_value);
+            assert(status >= 0);
+
+            return attr_value;
+        }
+    };
+}
 
 // We're going to use the Curiously Recurring Template Pattern to
 // allow any derived class from Location to create Group objects,
@@ -177,6 +289,16 @@ class Location : public NamedIdentity {
             Dataset dataset = open_dataset(data.name());
             dataset.append(data);
             return dataset;
+        }
+
+        template<typename T>
+        void attr(const std::string& attr_name, const T& attr_value) {
+            Attribute<T, decltype(*this)>::set(*this, attr_name, attr_value);
+        }
+
+        template<typename T>
+        T attr(const std::string& attr_name) {
+            return Attribute<T, decltype(*this)>::get(*this, attr_name);
         }
 };
 

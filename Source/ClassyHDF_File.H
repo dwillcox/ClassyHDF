@@ -6,11 +6,12 @@
 #include "hdf5.h"
 
 #include "ClassyHDF_Group.H"
+#include "ClassyHDF_Errors.H"
 
 namespace ClassyHDF {
 
 namespace FileMode {
-    enum {rw=0, trunc};
+    enum {rw=0, trunc, exists_is_error};
 }
 
 class File : public Location<Group> {
@@ -22,14 +23,18 @@ class File : public Location<Group> {
             set_name(file_name);
 
             // try to open the file in read/write mode, otherwise create it
-            if (access_type == FileMode::rw) {
+            if (access_type == FileMode::rw || access_type == FileMode::exists_is_error) {
                 set_existed(true);
                 H5E_BEGIN_TRY
                     set_id(H5Fopen(name().c_str(), H5F_ACC_RDWR, H5P_DEFAULT));
                 H5E_END_TRY
+
+                if (access_type == FileMode::exists_is_error && id() >= 0) {
+                    throw Errors::file_exists;
+                }
             }
 
-            if (access_type == FileMode::trunc ||
+            if (access_type == FileMode::trunc || access_type == FileMode::exists_is_error ||
                 (access_type == FileMode::rw && id() < 0)) {
                 set_existed(false);
                 set_id(H5Fcreate(name().c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT));
