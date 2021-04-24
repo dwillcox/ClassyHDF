@@ -6,11 +6,6 @@
 
 using namespace ClassyHDF;
 
-/* 
- * We're going to create a "file.h5" HDF5 file
- * and work with an "Indices" data array in it.
- */
-
 void write_test_file(const std::string& filename) {
     File file(filename, FileMode::trunc);
     Group group1 = file.get_group("Data");
@@ -59,3 +54,4 @@ int main() {
         return -1;
     }
 }
+
